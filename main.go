@@ -4,11 +4,13 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
 
 var urlStore = make(map[string]string)
+var mu sync.Mutex
 
 func generateShortURL() string {
 	b := make([]byte, 6)
@@ -27,7 +29,9 @@ func shortenURL(c *gin.Context) {
 
 	shortCode := generateShortURL()
 
+	mu.Lock()
 	urlStore[shortCode] = req.OriginalURL
+	mu.Unlock()
 
 	c.JSON(http.StatusOK, gin.H{
 		"short_url": "http://localhost:8080/" + shortCode,
@@ -37,7 +41,9 @@ func shortenURL(c *gin.Context) {
 func redirectURL(c *gin.Context) {
 	shortCode := c.Param("short")
 
+	mu.Lock()
 	OriginalURL, exists := urlStore[shortCode]
+	mu.Unlock()
 
 	if !exists {
 		c.JSON(http.StatusNotFound, gin.H{"error": "URL not found"})
