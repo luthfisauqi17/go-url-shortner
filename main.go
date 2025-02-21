@@ -15,7 +15,7 @@ var mu sync.Mutex
 func generateShortURL() string {
 	b := make([]byte, 6)
 	rand.Read(b)
-	return base64.URLEncoding.EncodeToString(b)[:6]
+	return base64.RawURLEncoding.EncodeToString(b)[:6]
 }
 
 func shortenURL(c *gin.Context) {
